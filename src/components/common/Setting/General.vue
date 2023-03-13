@@ -1,15 +1,18 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { NButton, NInput, NPopconfirm, useMessage } from 'naive-ui'
+import { NButton, NInput, NPopconfirm, NSelect, useMessage } from 'naive-ui'
 import type { Language, Theme } from '@/store/modules/app/helper'
 import { SvgIcon } from '@/components/common'
 import { useAppStore, useUserStore } from '@/store'
 import type { UserInfo } from '@/store/modules/user/helper'
 import { getCurrentDate } from '@/utils/functions'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { t } from '@/locales'
 
 const appStore = useAppStore()
 const userStore = useUserStore()
+
+const { isMobile } = useBasicLayout()
 
 const ms = useMessage()
 
@@ -51,7 +54,7 @@ const themeOptions: { label: string; key: Theme; icon: string }[] = [
 ]
 
 const languageOptions: { label: string; key: Language; value: Language }[] = [
-  { label: '中文', key: 'zh-CN', value: 'zh-CN' },
+  { label: '简体中文', key: 'zh-CN', value: 'zh-CN' },
   { label: '繁體中文', key: 'zh-TW', value: 'zh-TW' },
   { label: 'English', key: 'en-US', value: 'en-US' },
 ]
@@ -148,41 +151,47 @@ function handleImportButtonClick(): void {
         </NButton>
       </div>
 
-      <div class="flex items-center space-x-4">
+      <div
+        class="flex items-center space-x-4"
+        :class="isMobile && 'items-start'"
+      >
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.chatHistory') }}</span>
 
-        <NButton @click="exportData">
-          <template #icon>
-            <SvgIcon icon="ri:download-2-fill" />
-          </template>
-          {{ $t('common.export') }}
-        </NButton>
+        <div class="flex flex-wrap items-center gap-4">
+          <NButton size="small" @click="exportData">
+            <template #icon>
+              <SvgIcon icon="ri:download-2-fill" />
+            </template>
+            {{ $t('common.export') }}
+          </NButton>
 
-        <input id="fileInput" type="file" style="display:none" @change="importData">
-        <NButton @click="handleImportButtonClick">
-          <template #icon>
-            <SvgIcon icon="ri:upload-2-fill" />
-          </template>
-          {{ $t('common.import') }}
-        </NButton>
+          <input id="fileInput" type="file" style="display:none" @change="importData">
+          <NButton size="small" @click="handleImportButtonClick">
+            <template #icon>
+              <SvgIcon icon="ri:upload-2-fill" />
+            </template>
+            {{ $t('common.import') }}
+          </NButton>
 
-        <NPopconfirm placement="bottom" @positive-click="clearData">
-          <template #trigger>
-            <NButton>
-              <template #icon>
-                <SvgIcon icon="ri:close-circle-line" />
-              </template>
-              {{ $t('common.clear') }}
-            </NButton>
-          </template>
-          {{ $t('chat.clearHistoryConfirm') }}
-        </NPopconfirm>
+          <NPopconfirm placement="bottom" @positive-click="clearData">
+            <template #trigger>
+              <NButton size="small">
+                <template #icon>
+                  <SvgIcon icon="ri:close-circle-line" />
+                </template>
+                {{ $t('common.clear') }}
+              </NButton>
+            </template>
+            {{ $t('chat.clearHistoryConfirm') }}
+          </NPopconfirm>
+        </div>
       </div>
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.theme') }}</span>
-        <div class="flex items-center space-x-4">
+        <div class="flex flex-wrap items-center gap-4">
           <template v-for="item of themeOptions" :key="item.key">
             <NButton
+              size="small"
               :type="item.key === theme ? 'primary' : undefined"
               @click="appStore.setTheme(item.key)"
             >
@@ -195,20 +204,18 @@ function handleImportButtonClick(): void {
       </div>
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.language') }}</span>
-        <div class="flex items-center space-x-4">
-          <template v-for="item of languageOptions" :key="item.key">
-            <NButton
-              :type="item.key === language ? 'primary' : undefined"
-              @click="appStore.setLanguage(item.key)"
-            >
-              {{ item.label }}
-            </NButton>
-          </template>
+        <div class="flex flex-wrap items-center gap-4">
+          <NSelect
+            style="width: 140px"
+            :value="language"
+            :options="languageOptions"
+            @update-value="value => appStore.setLanguage(value)"
+          />
         </div>
       </div>
       <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.resetUserInfo') }}</span>
-        <NButton @click="handleReset">
+        <NButton size="small" @click="handleReset">
           {{ $t('common.reset') }}
         </NButton>
       </div>
